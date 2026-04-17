@@ -1,6 +1,5 @@
 import { task } from "hardhat/config";
 import { formatUnits } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 
 import { trackedAccounts } from "../config/trackedAccounts.js";
 
@@ -34,17 +33,6 @@ function table(headers: string[], rows: string[][], rightAlign: number[] = []) {
 
 export default task("balance", "Print token balances, roles, and allowances for tracked accounts")
   .setInlineAction(async (_args, hre) => {
-    const ownedAddresses = new Set(
-      [
-        process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY,
-        process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY,
-        process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY,
-        process.env.HEDERA_TESTNET_USER1_PRIVATE_KEY,
-      ]
-        .filter(Boolean)
-        .map((key) => privateKeyToAccount(key as `0x${string}`).address.toLowerCase()),
-    );
-
     const networkConnection = await hre.network.connect();
     const { viem } = networkConnection;
 
@@ -64,14 +52,14 @@ export default task("balance", "Print token balances, roles, and allowances for 
     ]);
 
     const accountRows = await Promise.all(
-      trackedAccounts.map(async ({ name, address }) => {
+      trackedAccounts.map(async ({ name, address, envKey }) => {
         const [balance, isAdmin, isMinter, hederaId] = await Promise.all([
           token.read.balanceOf([address]),
           token.read.hasRole([DEFAULT_ADMIN_ROLE, address]),
           token.read.hasRole([MINTER_ROLE, address]),
           mirrorNodeBase ? fetchHederaAccountId(mirrorNodeBase, address) : Promise.resolve(null),
         ]);
-        const hasKey = ownedAddresses.has(address.toLowerCase());
+        const hasKey = !!envKey && !!process.env[envKey];
         return { name, address, balance, isAdmin, isMinter, hasKey, hederaId };
       }),
     );

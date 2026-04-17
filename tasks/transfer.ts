@@ -1,9 +1,8 @@
 import { task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types";
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 
-import { trackedAccounts } from "../config/trackedAccounts.js";
+import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
 
 const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
@@ -43,20 +42,7 @@ export default task("transfer", "Transfer OERC20TT tokens between accounts")
     const fromAddress = resolveAddress(from);
     const toAddress = resolveAddress(to);
 
-    // Find the private key for the sender.
-    const knownKeys = [
-      process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_USER1_PRIVATE_KEY,
-    ]
-      .filter(Boolean)
-      .map((key) => {
-        const account = privateKeyToAccount(key as `0x${string}`);
-        return { address: account.address.toLowerCase(), key: key as `0x${string}` };
-      });
-
-    const signingKey = knownKeys.find((k) => k.address === fromAddress.toLowerCase())?.key;
+    const signingKey = getSigningKey(fromAddress);
     if (!signingKey) {
       throw new Error(
         `No private key found in .env for "${from}" (${fromAddress}). ` +
