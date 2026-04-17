@@ -1,7 +1,20 @@
 import { network } from "hardhat";
 import { formatUnits } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 import { trackedAccounts, trackedAllowances } from "../config/trackedAccounts.js";
+
+// Derive the set of addresses we hold private keys for.
+const ownedAddresses = new Set(
+  [
+    process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY,
+    process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY,
+    process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY,
+    process.env.HEDERA_TESTNET_USER1_PRIVATE_KEY,
+  ]
+    .filter(Boolean)
+    .map((key) => privateKeyToAccount(key as `0x${string}`).address.toLowerCase()),
+);
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
@@ -27,7 +40,8 @@ const accountRows = await Promise.all(
       token.read.hasRole([DEFAULT_ADMIN_ROLE, address]),
       token.read.hasRole([MINTER_ROLE, address]),
     ]);
-    return { name, address, balance, isAdmin, isMinter };
+    const hasKey = ownedAddresses.has(address.toLowerCase());
+    return { name, address, balance, isAdmin, isMinter, hasKey };
   }),
 );
 
@@ -69,9 +83,9 @@ const fmt   = (v: bigint)   => formatUnits(v, decimals);
 console.log(`\n── Token: ${symbol} ──────────────────────────────────────────────\n`);
 
 table(
-  ["Account", "Address", `Balance (${symbol})`, "Admin", "Minter"],
-  accountRows.map(({ name, address, balance, isAdmin, isMinter }) => [
-    name, address, fmt(balance), check(isAdmin), check(isMinter),
+  ["Account", "Public Key", `Balance (${symbol})`, "Admin", "Minter", "Private Key"],
+  accountRows.map(({ name, address, balance, isAdmin, isMinter, hasKey }) => [
+    name, address, fmt(balance), check(isAdmin), check(isMinter), check(hasKey),
   ]),
   [2],
 );

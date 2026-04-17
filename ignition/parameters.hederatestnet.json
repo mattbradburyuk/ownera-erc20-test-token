@@ -1,6 +1,6 @@
 {
   "OwneraERC20TestTokenModule": {
-    "defaultAdmin": "0x1de5f1d073f93458397048231d76ab590675fa96",
+    "defaultAdmin": "0xe289a429ea344768d91a08b34b2278fade5e6240",
     "minter": "0x72a8c3ead0a9c5009e14ba7ab8fde1ebe9334420"
   }
 }
