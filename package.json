@@ -2,7 +2,11 @@
   "name": "ownera-ERC20-test-token",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "menu": "npx hardhat menu --network hederatestnet"
+  },
   "devDependencies": {
+    "@inquirer/prompts": "^7.0.0",
     "@nomicfoundation/hardhat-ignition": "^3.1.1",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
     "@types/node": "^22.19.17",
