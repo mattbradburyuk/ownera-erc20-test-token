@@ -4,7 +4,6 @@ A test ERC-20 token deployed on Hedera testnet, used for Ownera Hedera adaptor t
 
 ## todo
 
-- try out adding accounts
 - see if works on a local network
 - work out if can write an appropriate test suite
 - fix the node version issue
