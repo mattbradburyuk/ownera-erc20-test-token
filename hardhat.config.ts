@@ -3,8 +3,13 @@ import "dotenv/config";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
 
+import balanceTask from "./tasks/balance.js";
+import changeAdminTask from "./tasks/changeAdmin.js";
+import mintTask from "./tasks/mint.js";
+
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin],
+  tasks: [balanceTask, changeAdminTask, mintTask],
   solidity: {
     profiles: {
       default: {
