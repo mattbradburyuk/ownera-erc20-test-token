@@ -2,9 +2,8 @@ import { task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types";
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
 
+import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
 import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
-
-const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
 function resolveAddress(nameOrAddress: string): `0x${string}` {
   const account = trackedAccounts.find(
@@ -34,11 +33,17 @@ export default task("transfer", "Transfer OERC20TT tokens between accounts")
     type: ArgumentType.STRING_WITHOUT_DEFAULT,
     defaultValue: undefined,
   })
-  .setInlineAction(async ({ from, to, amount }, hre) => {
+  .addOption({
+    name: "contract",
+    description: "Deployment ID (from ignition/deployments/)",
+    defaultValue: defaultDeploymentId,
+  })
+  .setInlineAction(async ({ from, to, amount, contract }, hre) => {
     if (!from) throw new Error("--from is required");
     if (!to) throw new Error("--to is required");
     if (!amount) throw new Error("--amount is required");
 
+    const CONTRACT_ADDRESS = getContractAddress(contract);
     const fromAddress = resolveAddress(from);
     const toAddress = resolveAddress(to);
 

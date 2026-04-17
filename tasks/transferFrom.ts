@@ -2,9 +2,8 @@ import { task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types";
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
 
+import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
 import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
-
-const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
 function resolveAddress(nameOrAddress: string): `0x${string}` {
   const account = trackedAccounts.find(
@@ -40,12 +39,18 @@ export default task("transfer-from", "Transfer tokens on behalf of an owner usin
     type: ArgumentType.STRING_WITHOUT_DEFAULT,
     defaultValue: undefined,
   })
-  .setInlineAction(async ({ owner, spender, to, amount }, hre) => {
+  .addOption({
+    name: "contract",
+    description: "Deployment ID (from ignition/deployments/)",
+    defaultValue: defaultDeploymentId,
+  })
+  .setInlineAction(async ({ owner, spender, to, amount, contract }, hre) => {
     if (!owner) throw new Error("--owner is required");
     if (!spender) throw new Error("--spender is required");
     if (!to) throw new Error("--to is required");
     if (!amount) throw new Error("--amount is required");
 
+    const CONTRACT_ADDRESS = getContractAddress(contract);
     const ownerAddress = resolveAddress(owner);
     const spenderAddress = resolveAddress(spender);
     const toAddress = resolveAddress(to);

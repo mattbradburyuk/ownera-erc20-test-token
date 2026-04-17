@@ -1,9 +1,8 @@
 import { task } from "hardhat/config";
 import { privateKeyToAccount } from "viem/accounts";
 
+import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
 import { trackedAccounts } from "../config/trackedAccounts.js";
-
-const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
 export default task("change-admin", "Transfer DEFAULT_ADMIN_ROLE to another account")
   .addOption({
@@ -12,7 +11,13 @@ export default task("change-admin", "Transfer DEFAULT_ADMIN_ROLE to another acco
       "Name of the account to transfer DEFAULT_ADMIN_ROLE to (must be in config/trackedAccounts.json)",
     defaultValue: "Admin",
   })
-  .setInlineAction(async ({ newAdmin: newAdminName }, hre) => {
+  .addOption({
+    name: "contract",
+    description: "Deployment ID (from ignition/deployments/)",
+    defaultValue: defaultDeploymentId,
+  })
+  .setInlineAction(async ({ newAdmin: newAdminName, contract }, hre) => {
+    const CONTRACT_ADDRESS = getContractAddress(contract);
     const knownKeys = [
       process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY,
       process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY,

@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { task } from "hardhat/config";
 import { input, select } from "@inquirer/prompts";
 
+import { deployedContracts } from "../config/deployedContracts.js";
 import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
 
 function allAccountChoices() {
@@ -34,6 +35,16 @@ const TASK_CHOICES = [
 
 export default task("menu", "Interactive menu for running tasks")
   .setInlineAction(async (_args, _hre) => {
+    const contractChoices = deployedContracts.map((c) => ({
+      name: `${c.id}  —  ${c.contractKey.split("#")[1] ?? c.contractKey}  (${c.address})`,
+      value: c.id,
+    }));
+    const contractId = await select({
+      message: "Select a contract",
+      choices: contractChoices,
+      pageSize: contractChoices.length,
+    });
+
     const taskName = await select({
       message: "Select a task",
       choices: TASK_CHOICES,
@@ -120,6 +131,7 @@ export default task("menu", "Interactive menu for running tasks")
 
     const cmdParts = ["hardhat", taskName];
     if (network) cmdParts.push("--network", network);
+    cmdParts.push("--contract", contractId);
     for (const [key, val] of Object.entries(args)) {
       cmdParts.push(`--${key}`, val);
     }

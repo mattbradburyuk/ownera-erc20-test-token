@@ -1,9 +1,8 @@
 import { task } from "hardhat/config";
 import { formatUnits } from "viem";
 
+import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
 import { trackedAccounts } from "../config/trackedAccounts.js";
-
-const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
 async function fetchHederaAccountId(mirrorNodeBase: string, address: string): Promise<string> {
   try {
@@ -32,7 +31,13 @@ function table(headers: string[], rows: string[][], rightAlign: number[] = []) {
 }
 
 export default task("balance", "Print token balances, roles, and allowances for tracked accounts")
-  .setInlineAction(async (_args, hre) => {
+  .addOption({
+    name: "contract",
+    description: "Deployment ID (from ignition/deployments/)",
+    defaultValue: defaultDeploymentId,
+  })
+  .setInlineAction(async ({ contract }, hre) => {
+    const CONTRACT_ADDRESS = getContractAddress(contract);
     const networkConnection = await hre.network.connect();
     const { viem } = networkConnection;
 

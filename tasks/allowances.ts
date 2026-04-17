@@ -2,9 +2,8 @@ import { task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types";
 import { formatUnits, getAddress, isAddress } from "viem";
 
+import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
 import { trackedAccounts } from "../config/trackedAccounts.js";
-
-const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
 function resolveAddress(nameOrAddress: string): `0x${string}` {
   const account = trackedAccounts.find(
@@ -37,9 +36,15 @@ export default task("allowances", "List allowances granted by an account to all 
     type: ArgumentType.STRING_WITHOUT_DEFAULT,
     defaultValue: undefined,
   })
-  .setInlineAction(async ({ owner }, hre) => {
+  .addOption({
+    name: "contract",
+    description: "Deployment ID (from ignition/deployments/)",
+    defaultValue: defaultDeploymentId,
+  })
+  .setInlineAction(async ({ owner, contract }, hre) => {
     if (!owner) throw new Error("--owner is required");
 
+    const CONTRACT_ADDRESS = getContractAddress(contract);
     const ownerAddress = resolveAddress(owner);
 
     const { viem } = await hre.network.connect();
