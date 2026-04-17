@@ -6,10 +6,11 @@ import { configVariable, defineConfig } from "hardhat/config";
 import balanceTask from "./tasks/balance.js";
 import changeAdminTask from "./tasks/changeAdmin.js";
 import mintTask from "./tasks/mint.js";
+import transferTask from "./tasks/transfer.js";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin],
-  tasks: [balanceTask, changeAdminTask, mintTask],
+  tasks: [balanceTask, changeAdminTask, mintTask, transferTask],
   solidity: {
     profiles: {
       default: {
