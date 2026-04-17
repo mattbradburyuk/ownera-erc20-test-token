@@ -6,10 +6,4 @@ export interface TrackedAccount {
   address: Address;
 }
 
-export interface TrackedAllowance {
-  owner: string;
-  spender: string;
-}
-
 export const trackedAccounts: TrackedAccount[] = config.accounts as TrackedAccount[];
-export const trackedAllowances: TrackedAllowance[] = config.allowances as TrackedAllowance[];

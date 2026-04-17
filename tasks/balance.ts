@@ -2,7 +2,7 @@ import { task } from "hardhat/config";
 import { formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { trackedAccounts, trackedAllowances } from "../config/trackedAccounts.js";
+import { trackedAccounts } from "../config/trackedAccounts.js";
 
 const CONTRACT_ADDRESS = "0x2723478C8B54238b8D2fa8d30749EC43e37AE540";
 
@@ -76,19 +76,6 @@ export default task("balance", "Print token balances, roles, and allowances for 
       }),
     );
 
-    const accountByName = Object.fromEntries(trackedAccounts.map((a) => [a.name, a.address]));
-
-    const allowanceRows = await Promise.all(
-      trackedAllowances.map(async ({ owner, spender }) => {
-        const ownerAddress = accountByName[owner];
-        const spenderAddress = accountByName[spender];
-        if (!ownerAddress) throw new Error(`Unknown account "${owner}" in trackedAllowances`);
-        if (!spenderAddress) throw new Error(`Unknown account "${spender}" in trackedAllowances`);
-        const allowance = await token.read.allowance([ownerAddress, spenderAddress]);
-        return { owner, spender, allowance };
-      }),
-    );
-
     const check = (v: boolean) => (v ? "✓" : "-");
     const fmt = (v: bigint) => formatUnits(v, decimals);
 
@@ -109,15 +96,5 @@ export default task("balance", "Print token balances, roles, and allowances for 
     );
 
     console.log(`\n  Total supply: ${fmt(totalSupply)} ${symbol}\n`);
-
-    if (allowanceRows.length > 0) {
-      console.log(`── Allowances (${symbol}) ────────────────────────────────────────\n`);
-      table(
-        ["Owner", "Spender", `Allowance (${symbol})`],
-        allowanceRows.map(({ owner, spender, allowance }) => [owner, spender, fmt(allowance)]),
-        [2],
-      );
-      console.log();
-    }
   })
   .build();
