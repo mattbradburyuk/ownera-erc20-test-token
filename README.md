@@ -2,6 +2,14 @@
 
 A test ERC-20 token deployed on Hedera testnet, used for Ownera Hedera adaptor testing.
 
+## todo
+
+- try out adding accounts
+- see if works on a local network
+- work out if can write an appropriate test suite
+- fix the node version issue
+
+
 **Contract:** `OwneraERC20TestToken` (symbol: `OERC20TT`, 18 decimals)  
 **Deployed at:** `0x2723478C8B54238b8D2fa8d30749EC43e37AE540` (Hedera testnet, chain ID 296)
 

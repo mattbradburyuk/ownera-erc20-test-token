@@ -3,6 +3,8 @@ import "dotenv/config";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
 
+import { trackedAccounts } from "./config/trackedAccounts.js";
+
 import allowancesTask from "./tasks/allowances.js";
 import approveAllowanceTask from "./tasks/approveAllowance.js";
 import balanceTask from "./tasks/balance.js";
@@ -56,12 +58,9 @@ export default defineConfig({
       type: "http",
       chainType: "l1",
       url: process.env.HEDERA_TESTNET_RPC_URL!,
-      accounts: [
-        process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY!,
-        process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY!,
-        process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY!,
-        process.env.HEDERA_TESTNET_USER1_PRIVATE_KEY!,
-      ],
+      accounts: trackedAccounts
+        .filter((a) => a.envKey && process.env[a.envKey])
+        .map((a) => process.env[a.envKey!] as string),
     },
   },
 });

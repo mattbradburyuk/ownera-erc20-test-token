@@ -3,7 +3,7 @@
     { "name": "Deployer", "address": "0x1de5f1d073f93458397048231d76ab590675fa96", "envKey": "HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY" },
     { "name": "Admin",    "address": "0xe289a429ea344768d91a08b34b2278fade5e6240", "envKey": "HEDERA_TESTNET_ADMIN_PRIVATE_KEY" },
     { "name": "Minter",   "address": "0x72A8C3ead0a9C5009e14Ba7Ab8fDE1ebe9334420", "envKey": "HEDERA_TESTNET_MINTER_PRIVATE_KEY" },
-    { "name": "User1",    "address": "0x0000000000000000000000000000000000000000", "envKey": "HEDERA_TESTNET_USER1_PRIVATE_KEY" },
-    { "name": "Holder1",  "address": "0x0000000000000000000000000000000000789efd" }
+    { "name": "Holder1",  "address": "0x0000000000000000000000000000000000789efd", "envKey": "HEDERA_TESTNET_HOLDER1_PRIVATE_KEY"},
+    { "name": "Holder2",  "address": "0x0000000000000000000000000000000000789f18"}
   ]
 }

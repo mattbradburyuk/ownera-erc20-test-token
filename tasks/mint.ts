@@ -1,10 +1,8 @@
 import { task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types";
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-
 import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
-import { trackedAccounts } from "../config/trackedAccounts.js";
+import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
 
 function resolveAddress(nameOrAddress: string): `0x${string}` {
   const account = trackedAccounts.find(
@@ -40,16 +38,29 @@ export default task("mint", "Mint OERC20TT tokens to an account")
     const CONTRACT_ADDRESS = getContractAddress(contract);
     const recipientAddress = resolveAddress(recipient);
 
-    const minterPrivateKey = process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY as `0x${string}`;
-    if (!minterPrivateKey) throw new Error("HEDERA_TESTNET_MINTER_PRIVATE_KEY is not set");
-
-    const minterAccount = privateKeyToAccount(minterPrivateKey);
-
     const { viem } = await hre.network.connect();
     const publicClient = await viem.getPublicClient();
-    const minterWallet = await viem.getWalletClient(minterAccount.address);
+    const token = await viem.getContractAt("OwneraERC20TestToken", CONTRACT_ADDRESS);
 
-    const token = await viem.getContractAt("OwneraERC20TestToken", CONTRACT_ADDRESS, {
+    const MINTER_ROLE = await token.read.MINTER_ROLE();
+    const roleChecks = await Promise.all(
+      trackedAccounts.map((a) =>
+        token.read.hasRole([MINTER_ROLE, a.address]).then((has) => ({ ...a, has })),
+      ),
+    );
+    const minterEntry = roleChecks.find((a) => a.has);
+    if (!minterEntry) throw new Error("No tracked account holds MINTER_ROLE.");
+
+    const signingKey = getSigningKey(minterEntry.address);
+    if (!signingKey) {
+      throw new Error(
+        `"${minterEntry.name}" (${minterEntry.address}) holds MINTER_ROLE but ` +
+          `no private key was found in .env. Add the key to sign this transaction.`,
+      );
+    }
+
+    const minterWallet = await viem.getWalletClient(minterEntry.address);
+    const tokenAsMinter = await viem.getContractAt("OwneraERC20TestToken", CONTRACT_ADDRESS, {
       client: { wallet: minterWallet },
     });
 
@@ -58,12 +69,12 @@ export default task("mint", "Mint OERC20TT tokens to an account")
     const symbol = await token.read.symbol();
 
     console.log(`Minting ${amount} ${symbol} to ${recipient} (${recipientAddress})...`);
-    console.log(`  Minter:   ${minterWallet.account.address}`);
+    console.log(`  Minter:   ${minterEntry.name} (${minterEntry.address})`);
     console.log(`  Contract: ${CONTRACT_ADDRESS}`);
 
     const balanceBefore = await token.read.balanceOf([recipientAddress]);
 
-    const txHash = await token.write.mint([recipientAddress, amountParsed]);
+    const txHash = await tokenAsMinter.write.mint([recipientAddress, amountParsed]);
     console.log(`  Tx hash:  ${txHash}`);
 
     await publicClient.waitForTransactionReceipt({ hash: txHash });

@@ -1,8 +1,6 @@
 import { task } from "hardhat/config";
-import { privateKeyToAccount } from "viem/accounts";
-
 import { defaultDeploymentId, getContractAddress } from "../config/deployedContracts.js";
-import { trackedAccounts } from "../config/trackedAccounts.js";
+import { getSigningKey, trackedAccounts } from "../config/trackedAccounts.js";
 
 export default task("change-admin", "Transfer DEFAULT_ADMIN_ROLE to another account")
   .addOption({
@@ -18,22 +16,6 @@ export default task("change-admin", "Transfer DEFAULT_ADMIN_ROLE to another acco
   })
   .setInlineAction(async ({ newAdmin: newAdminName, contract }, hre) => {
     const CONTRACT_ADDRESS = getContractAddress(contract);
-    const knownKeys = [
-      process.env.HEDERA_TESTNET_DEPLOYER_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_ADMIN_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_MINTER_PRIVATE_KEY,
-      process.env.HEDERA_TESTNET_USER1_PRIVATE_KEY,
-    ]
-      .filter(Boolean)
-      .map((key) => {
-        const account = privateKeyToAccount(key as `0x${string}`);
-        return { address: account.address, key: key as `0x${string}` };
-      });
-
-    const keyByAddress = Object.fromEntries(
-      knownKeys.map(({ address, key }) => [address.toLowerCase(), key]),
-    );
-
     const newAdmin = trackedAccounts.find((a) => a.name === newAdminName);
     if (!newAdmin) throw new Error(`"${newAdminName}" not found in config/trackedAccounts.json`);
 
@@ -63,7 +45,7 @@ export default task("change-admin", "Transfer DEFAULT_ADMIN_ROLE to another acco
       return;
     }
 
-    const signingKey = keyByAddress[currentAdmin.address.toLowerCase()];
+    const signingKey = getSigningKey(currentAdmin.address);
     if (!signingKey) {
       throw new Error(
         `Found that "${currentAdmin.name}" (${currentAdmin.address}) holds DEFAULT_ADMIN_ROLE, ` +
